@@ -52,6 +52,19 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		}
 	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('pgextension.connection', async () => {
+		var connectionInfo = await promptConnectionInfo();
+		if (connectionInfo) {
+			if (pgHelper) { 
+				//TODO: show disconnecting in status bar
+				await pgHelper.disconnect();
+			}
+
+			context.globalState.update("pgConnectionInfo", connectionInfo);
+			pgHelper = new PgHelper(connectionInfo);
+		}
+	}));
 }
 
 export function deactivate() {}

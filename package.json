@@ -11,7 +11,8 @@
   ],
   "activationEvents": [
     "onCommand:pgextension.createTable",
-    "onCommand:pgextension.addColumn"
+    "onCommand:pgextension.addColumn",
+    "onCommand:pgextension.connection"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -23,6 +24,10 @@
       {
         "command": "pgextension.addColumn",
         "title": "Postgres: Add Column"
+      },
+      {
+        "command": "pgextension.connection",
+        "title": "Postgres: Initialize or reset connection"
       }
     ]
   },
