@@ -10,9 +10,10 @@
     "Other"
   ],
   "activationEvents": [
+    "onCommand:pgextension.connection",
     "onCommand:pgextension.createTable",
-    "onCommand:pgextension.addColumn",
-    "onCommand:pgextension.connection"
+    "onCommand:pgextension.dropTable",
+    "onCommand:pgextension.addColumn"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -20,6 +21,10 @@
       {
         "command": "pgextension.createTable",
         "title": "Postgres: Create Table"
+      },
+      {
+        "command": "pgextension.dropTable",
+        "title": "Postgres: Drop Table"
       },
       {
         "command": "pgextension.addColumn",

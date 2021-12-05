@@ -19,14 +19,26 @@ export class PgHelper {
         vscode.window.showInformationMessage(`Created table ${tableName}`);
     }
 
+    async dropTable(tableName: string): Promise<void> {
+        await this.client.query(`DROP TABLE ${tableName}`);
+        vscode.window.showInformationMessage(`Droped table ${tableName}`);
+    }
+
     async addColumn(tableName: string, columnName: string, type: string): Promise<void> {
         await this.client.query(`ALTER TABLE ${tableName}\n` +
                                 `ADD COLUMN ${columnName} ${type}`);
         vscode.window.showInformationMessage(`Added ${columnName} to ${tableName}`);
     }
 
+    async getTables(): Promise<string[]> {
+        const query = "SELECT * FROM pg_catalog.pg_tables " + 
+                    "WHERE schemaname != 'pg_catalog' " + 
+                    "AND schemaname != 'information_schema';";
+        var result = await this.client.query(query);
+        return result.rows.map(r => r.tablename);
+    }
+
     // TODO: function to return dbs
-    // TODO: function to return tables
     // TODO: function to return columns
 
     async disconnect() {

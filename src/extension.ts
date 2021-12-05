@@ -3,6 +3,8 @@ import { pgColumnTypes, PgConnectionInfo, PgHelper } from "./pghelper";
 
 export function activate(context: vscode.ExtensionContext) {
 	var pgHelper: PgHelper | null = null;
+	var lastTable = "";
+	
 	async function getPgHelper(context: vscode.ExtensionContext) : Promise<PgHelper | null> {
 		if (!pgHelper) {
 			var connectionInfo = context.globalState.get("pgConnectionInfo") as PgConnectionInfo | null;
@@ -22,8 +24,23 @@ export function activate(context: vscode.ExtensionContext) {
 		return pgHelper;
 	}
 
+	async function promptExistingTable() : Promise<string | null> {
+		var pgHelper = await getPgHelper(context);
+		if (pgHelper) {
+			const tableNames = await pgHelper.getTables();
+			const options = tableNames.map(t => {
+				return { label: t };
+			});
 
-	var lastTable = "";
+			var selection = await vscode.window.showQuickPick(options);
+			if (selection) {
+				return selection.label;
+			}
+		}
+
+		return null;
+	}
+
 
 	context.subscriptions.push(vscode.commands.registerCommand('pgextension.createTable', async () => {
 		var pgHelper = await getPgHelper(context);
@@ -32,6 +49,16 @@ export function activate(context: vscode.ExtensionContext) {
 			if (tableName) {
 				lastTable = tableName;			
 				await pgHelper.createTable(tableName);
+			}
+		}
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('pgextension.dropTable', async () => {
+		var pgHelper = await getPgHelper(context);
+		if (pgHelper) {
+			var tableName = await promptExistingTable();
+			if (tableName) {
+				await pgHelper.dropTable(tableName);
 			}
 		}
 	}));
@@ -90,4 +117,3 @@ async function promptConnectionInfo(): Promise<PgConnectionInfo | null> {
 
 	return null;
 }
-
