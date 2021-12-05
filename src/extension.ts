@@ -121,8 +121,9 @@ export function activate(context: vscode.ExtensionContext) {
 		var connectionInfo = await promptConnectionInfo();
 		if (connectionInfo) {
 			if (pgHelper) { 
-				//TODO: show disconnecting in status bar
+				var status = vscode.window.setStatusBarMessage("Disconnecting...");
 				await pgHelper.disconnect();
+				status.dispose();
 			}
 
 			context.globalState.update("pgConnectionInfo", connectionInfo);
