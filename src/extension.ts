@@ -143,7 +143,7 @@ async function promptConnectionInfo(): Promise<PgConnectionInfo | null> {
 			if (database) {
 				let user = await vscode.window.showInputBox({ prompt: "User" });
 				if (user) {
-					let password = await vscode.window.showInputBox({ prompt: "Password" }); //TODO hide input
+					let password = await vscode.window.showInputBox({ prompt: "Password", password: true });
 					if (password) {
 						return new PgConnectionInfo(host, port, database, user, password);
 					}
