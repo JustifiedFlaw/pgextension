@@ -19,9 +19,9 @@ export class PgHelper {
         vscode.window.showInformationMessage(`Created table ${tableName}`);
     }
 
-    async dropTable(tableName: string): Promise<void> {
-        await this.client.query(`DROP TABLE ${tableName}`);
-        vscode.window.showInformationMessage(`Droped table ${tableName}`);
+    async dropTable(table: PgTable): Promise<void> {
+        await this.client.query(`DROP TABLE ${table.tableName}`);
+        vscode.window.showInformationMessage(`Droped table ${table.tableName}`);
     }
 
     async addColumn(tableName: string, columnName: string, type: string): Promise<void> {
@@ -30,16 +30,30 @@ export class PgHelper {
         vscode.window.showInformationMessage(`Added ${columnName} to ${tableName}`);
     }
 
-    async getTables(): Promise<string[]> {
+    async dropColumn(table: PgTable, columnName: string): Promise<void> {
+        await this.client.query(`ALTER TABLE ${table.tableName}\n` +
+                                `DROP COLUMN ${columnName}`);
+        vscode.window.showInformationMessage(`Droped ${columnName} of ${table.tableName}`);
+    }
+
+    async getTables(): Promise<PgTable[]> {
         const query = "SELECT * FROM pg_catalog.pg_tables " + 
                     "WHERE schemaname != 'pg_catalog' " + 
                     "AND schemaname != 'information_schema';";
         var result = await this.client.query(query);
-        return result.rows.map(r => r.tablename);
+        return result.rows.map(r => new PgTable(r.tablename, r.schemaname));
+    }
+
+    async getColumns(table: PgTable): Promise<string[]> {
+        const query = "SELECT column_name as columnname " +
+                    "FROM information_schema.columns " +
+                    "WHERE table_schema = $1 " +
+                    "AND table_name = $2;";
+        var result = await this.client.query(query, [table.schemaName, table.tableName]);
+        return result.rows.map(r => r.columnname);
     }
 
     // TODO: function to return dbs
-    // TODO: function to return columns
 
     async disconnect() {
         await this.client.end();
@@ -55,6 +69,15 @@ export class PgConnectionInfo {
         public password: string
     ) {}
 };
+
+export class PgTable {
+    constructor(
+        public tableName: string,
+        public schemaName: string
+    ) {
+        
+    }
+}
 
 export var pgColumnTypes = [
     { 

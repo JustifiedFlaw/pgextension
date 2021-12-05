@@ -13,11 +13,16 @@
     "onCommand:pgextension.connection",
     "onCommand:pgextension.createTable",
     "onCommand:pgextension.dropTable",
-    "onCommand:pgextension.addColumn"
+    "onCommand:pgextension.addColumn",
+    "onCommand:pgextension.dropColumn"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
+      {
+        "command": "pgextension.connection",
+        "title": "Postgres: Initialize or reset connection"
+      },
       {
         "command": "pgextension.createTable",
         "title": "Postgres: Create Table"
@@ -31,8 +36,8 @@
         "title": "Postgres: Add Column"
       },
       {
-        "command": "pgextension.connection",
-        "title": "Postgres: Initialize or reset connection"
+        "command": "pgextension.dropColumn",
+        "title": "Postgres: Drop Column"
       }
     ]
   },

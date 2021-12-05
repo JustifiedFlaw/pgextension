@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { pgColumnTypes, PgConnectionInfo, PgHelper } from "./pghelper";
+import { pgColumnTypes, PgConnectionInfo, PgHelper, PgTable } from "./pghelper";
 
 export function activate(context: vscode.ExtensionContext) {
 	var pgHelper: PgHelper | null = null;
@@ -24,12 +24,29 @@ export function activate(context: vscode.ExtensionContext) {
 		return pgHelper;
 	}
 
-	async function promptExistingTable() : Promise<string | null> {
+	async function promptExistingTable() : Promise<PgTable | null> {
 		var pgHelper = await getPgHelper(context);
 		if (pgHelper) {
-			const tableNames = await pgHelper.getTables();
-			const options = tableNames.map(t => {
-				return { label: t };
+			const tables = await pgHelper.getTables();
+			const options = tables.map(t => {
+				return { label: t.tableName, table: t };
+			});
+
+			var selection = await vscode.window.showQuickPick(options);
+			if (selection) {
+				return selection.table;
+			}
+		}
+
+		return null;
+	}
+
+	async function promptExistingColumn(table: PgTable) : Promise<string | null> {
+		var pgHelper = await getPgHelper(context);
+		if (pgHelper) {
+			const columnNames = await pgHelper.getColumns(table);
+			const options = columnNames.map(c => {
+				return { label: c };
 			});
 
 			var selection = await vscode.window.showQuickPick(options);
@@ -56,9 +73,9 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('pgextension.dropTable', async () => {
 		var pgHelper = await getPgHelper(context);
 		if (pgHelper) {
-			var tableName = await promptExistingTable();
-			if (tableName) {
-				await pgHelper.dropTable(tableName);
+			var table = await promptExistingTable();
+			if (table) {
+				await pgHelper.dropTable(table);
 			}
 		}
 	}));
@@ -75,6 +92,19 @@ export function activate(context: vscode.ExtensionContext) {
 					if (type) {
 						await pgHelper.addColumn(tableName, columnName, type.queryName);					
 					}
+				}
+			}
+		}
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('pgextension.dropColumn', async () => {
+		var pgHelper = await getPgHelper(context);
+		if (pgHelper) {
+			var table = await promptExistingTable();
+			if (table) {
+				var columnName = await promptExistingColumn(table);
+				if (columnName) {
+					await pgHelper.dropColumn(table, columnName);
 				}
 			}
 		}
