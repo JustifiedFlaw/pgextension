@@ -83,7 +83,14 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('pgextension.addColumn', async () => {
 		var pgHelper = await getPgHelper(context);
 		if (pgHelper) {
-			let tableName = await vscode.window.showInputBox({ prompt: 'Table Name...', value: lastTable });
+			var tableName:  string | undefined;
+			if (lastTable === "") {
+				let table = await promptExistingTable();
+				tableName = table?.tableName ?? undefined;
+			}
+			else {
+				tableName = await vscode.window.showInputBox({ prompt: 'Table Name...', value: lastTable });
+			}
 			if (tableName) {
 				lastTable = tableName;		
 				let columnName = await vscode.window.showInputBox({ prompt: 'Column Name...' });
