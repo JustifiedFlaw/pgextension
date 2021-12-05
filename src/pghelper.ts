@@ -53,8 +53,6 @@ export class PgHelper {
         return result.rows.map(r => r.columnname);
     }
 
-    // TODO: function to return dbs
-
     async disconnect() {
         await this.client.end();
     }
@@ -155,11 +153,11 @@ export var pgColumnTypes = [
         description: 'integer',
         queryName: 'integer'
     },
-    // { 
-    //     label: 'interval',
-    //     description: 'interval',
-    //     queryName: 'interval [ fields ] [ (p) ]'
-    // },
+    { 
+        label: 'interval',
+        description: 'interval',
+        queryName: 'interval'
+    },
     { 
         label: 'json',
         description: 'json',
@@ -190,11 +188,11 @@ export var pgColumnTypes = [
         description: 'money',
         queryName: 'money'
     },
-    // { 
-    //     label: 'numeric',
-    //     description: 'numeric',
-    //     queryName: 'numeric [ (p, s) ]'
-    // },
+    { 
+        label: 'numeric',
+        description: 'numeric',
+        queryName: 'numeric'
+    },
     { 
         label: 'path',
         description: 'path',
