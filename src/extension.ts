@@ -27,14 +27,16 @@ export function activate(context: vscode.ExtensionContext) {
 	async function promptExistingTable() : Promise<PgTable | null> {
 		var pgHelper = await getPgHelper(context);
 		if (pgHelper) {
-			const tables = await pgHelper.getTables();
-			const options = tables.map(t => {
-				return {
-					label: t.tableName,
-					description: t.schemaName + '.' + t.tableName,
-					table: t };
-			});
-			// TODO: put lastTable first
+			let tables = await pgHelper.getTables();
+			putLastTableFirst(tables);
+
+			const options = tables
+				.map(t => {
+					return {
+						label: t.tableName,
+						description: t.schemaName + '.' + t.tableName,
+						table: t };
+				});
 
 			var selection = await vscode.window.showQuickPick(options);
 			if (selection) {
@@ -43,6 +45,17 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 
 		return null;
+	}
+
+	function putLastTableFirst(tables: PgTable[]) {
+		if (lastTable) {
+			var lastTableIndex = tables.findIndex(t => t.tableName === lastTable?.tableName);
+			if (lastTableIndex > -1) {
+				var item = tables[lastTableIndex];
+				tables.splice(lastTableIndex, 1);
+				tables.splice(0, 0, item);
+			}
+		}
 	}
 
 	async function promptExistingColumn(table: PgTable) : Promise<string | null> {
