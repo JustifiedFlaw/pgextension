@@ -29,7 +29,10 @@ export function activate(context: vscode.ExtensionContext) {
 		if (pgHelper) {
 			const tables = await pgHelper.getTables();
 			const options = tables.map(t => {
-				return { label: t.tableName, table: t };
+				return {
+					label: t.tableName,
+					description: t.schemaName + '.' + t.tableName,
+					table: t };
 			});
 			// TODO: put lastTable first
 
