@@ -14,26 +14,26 @@ export class PgHelper {
         this.client.connect();
     }
 
-    async createTable(tableName: string): Promise<void> {
-        await this.client.query(`CREATE TABLE IF NOT EXISTS ${tableName} (Id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY)`);
-        vscode.window.showInformationMessage(`Created table ${tableName}`);
+    async createTable(table: PgTable): Promise<void> {
+        await this.client.query(`CREATE TABLE IF NOT EXISTS "${table.schemaName}"."${table.tableName}" (Id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY)`);
+        vscode.window.showInformationMessage(`Created table "${table.schemaName}"."${table.tableName}"`);
     }
 
     async dropTable(table: PgTable): Promise<void> {
-        await this.client.query(`DROP TABLE ${table.tableName}`);
-        vscode.window.showInformationMessage(`Droped table ${table.tableName}`);
+        await this.client.query(`DROP TABLE "${table.schemaName}"."${table.tableName}"`);
+        vscode.window.showInformationMessage(`Droped table "${table.schemaName}"."${table.tableName}"`);
     }
 
-    async addColumn(tableName: string, columnName: string, type: string): Promise<void> {
-        await this.client.query(`ALTER TABLE ${tableName}\n` +
+    async addColumn(table: PgTable, columnName: string, type: string): Promise<void> {
+        await this.client.query(`ALTER TABLE "${table.schemaName}"."${table.tableName}"\n` +
                                 `ADD COLUMN ${columnName} ${type}`);
-        vscode.window.showInformationMessage(`Added ${columnName} to ${tableName}`);
+        vscode.window.showInformationMessage(`Added ${columnName} to "${table.schemaName}"."${table.tableName}"`);
     }
 
     async dropColumn(table: PgTable, columnName: string): Promise<void> {
-        await this.client.query(`ALTER TABLE ${table.tableName}\n` +
+        await this.client.query(`ALTER TABLE "${table.schemaName}"."${table.tableName}"\n` +
                                 `DROP COLUMN ${columnName}`);
-        vscode.window.showInformationMessage(`Droped ${columnName} of ${table.tableName}`);
+        vscode.window.showInformationMessage(`Droped ${columnName} of "${table.schemaName}"."${table.tableName}"`);
     }
 
     async getTables(): Promise<PgTable[]> {

@@ -3,7 +3,7 @@ import { pgColumnTypes, PgConnectionInfo, PgHelper, PgTable } from "./pghelper";
 
 export function activate(context: vscode.ExtensionContext) {
 	var pgHelper: PgHelper | null = null;
-	var lastTable = "";
+	var lastTable: PgTable | null = null;
 	
 	async function getPgHelper(context: vscode.ExtensionContext) : Promise<PgHelper | null> {
 		if (!pgHelper) {
@@ -31,6 +31,7 @@ export function activate(context: vscode.ExtensionContext) {
 			const options = tables.map(t => {
 				return { label: t.tableName, table: t };
 			});
+			// TODO: put lastTable first
 
 			var selection = await vscode.window.showQuickPick(options);
 			if (selection) {
@@ -62,10 +63,13 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('pgextension.createTable', async () => {
 		var pgHelper = await getPgHelper(context);
 		if (pgHelper) {
-			let tableName = await vscode.window.showInputBox({ prompt: 'Table Name...' });
-			if (tableName) {
-				lastTable = tableName;			
-				await pgHelper.createTable(tableName);
+			let schemaName = await vscode.window.showInputBox({ prompt: 'Schema Name...', value: 'public' });
+			if (schemaName) {
+				let tableName = await vscode.window.showInputBox({ prompt: 'Table Name...' });
+				if (tableName) {
+					lastTable = new PgTable(tableName, schemaName);			
+					await pgHelper.createTable(lastTable);
+				}
 			}
 		}
 	}));
@@ -83,23 +87,24 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('pgextension.addColumn', async () => {
 		var pgHelper = await getPgHelper(context);
 		if (pgHelper) {
-			var tableName:  string | undefined;
-			if (lastTable === "") {
-				let table = await promptExistingTable();
-				tableName = table?.tableName ?? undefined;
-			}
-			else {
-				tableName = await vscode.window.showInputBox({ prompt: 'Table Name...', value: lastTable });
-			}
-			if (tableName) {
-				lastTable = tableName;		
-				let columnName = await vscode.window.showInputBox({ prompt: 'Column Name...' });
-				if (columnName) {
-					let type = await vscode.window.showQuickPick(pgColumnTypes);
-					if (type) {
-						await pgHelper.addColumn(tableName, columnName, type.queryName);					
+			let canceled = true;
+
+			
+			let table = await promptExistingTable();
+			if (table) {
+				lastTable = table;		
+				
+				do {
+					canceled = true;
+					let columnName = await vscode.window.showInputBox({ prompt: 'Column Name...' });
+					if (columnName) {
+						let type = await vscode.window.showQuickPick(pgColumnTypes);
+						if (type) {
+							await pgHelper.addColumn(table, columnName, type.queryName);
+							canceled = false;
+						}
 					}
-				}
+				} while (!canceled);
 			}
 		}
 	}));
@@ -109,6 +114,7 @@ export function activate(context: vscode.ExtensionContext) {
 		if (pgHelper) {
 			var table = await promptExistingTable();
 			if (table) {
+				lastTable = table;
 				var columnName = await promptExistingColumn(table);
 				if (columnName) {
 					await pgHelper.dropColumn(table, columnName);
