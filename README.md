@@ -7,3 +7,6 @@ All commands are in the command palette (Command+Shift+P)
 * Postgres: Add Column
 * Postgres: Drop Table
 * Postgres: Drop Column
+* Postgres: Initialize or reset connection
+
+It will ask you for the database connection info on the first use
